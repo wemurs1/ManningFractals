@@ -24,6 +24,8 @@ namespace tree_fractal
             var angle1 = double.Parse(angle1TextBox.Text);
             var angle2 = double.Parse(angle2TextBox.Text);
             var depth = int.Parse(depthTextBox.Text);
+            if (depth < 1) { depth = 1; depthTextBox.Text = depth.ToString(); }
+            if (depth > 20) { depth = 20; depthTextBox.Text = depth.ToString(); }
             var length = float.Parse(lengthTextBox.Text);
             var scale = float.Parse(scaleTextBox.Text);
             var bitmap = new Bitmap(curvePictureBox.Size.Width, curvePictureBox.Size.Height);
