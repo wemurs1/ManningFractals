@@ -49,7 +49,7 @@ namespace chaos_game
         {
             Drawing = false;
             startButton.Text = "Start";
-            dotsTimer.Stop();
+            // dotsTimer.Stop();
         }
 
         private void dotsTimer_Tick(object sender, EventArgs e)
