@@ -1,4 +1,4 @@
-﻿namespace escape_time_fractals
+namespace escape_time_fractals
 {
     partial class Form1
     {
