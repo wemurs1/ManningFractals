@@ -472,30 +472,49 @@ namespace escape_time_fractals
         private void MandelbrotPoint(double x, double y,
             out Complex z, out Complex c, out int stepNum)
         {
-            // Replace the following with your code.
-            z = new Complex();
-            c = new Complex();
+            z = Z0;
+            c = new Complex(x, y);
             stepNum = 0;
+            while ((stepNum < MaxIterations) && (z.Magnitude < MaxMagnitude))
+            {
+                // Calculate z(stepNum).
+                z = z * z + c;
+                stepNum++;
+            }
         }
 
         // Calculate the Julia set values for this point.
         private void JuliaPoint(double x, double y,
             out Complex z, out Complex c, out int stepNum)
         {
-            // Replace the following with your code.
-            z = new Complex();
-            c = new Complex();
+            z = new Complex(x, y);
+            c = C0;
             stepNum = 0;
+            while ((stepNum < MaxIterations) && (z.Magnitude < MaxMagnitude))
+            {
+                // Calculate z(stepNum).
+                z = z * z + c;
+                stepNum++;
+            }
         }
 
         // Calculate the vortex fractal values for this point.
         private void VortexPoint(double x, double y,
             out Complex z, out Complex c, out int stepNum)
         {
-            // Replace the following with your code.
-            z = new Complex();
-            c = new Complex();
+            Complex zN = new Complex(x, y);
+            Complex zNminus1 = new Complex(x, y);
+            c = new Complex(0.62, -0.55);   // Change this to experiment.
             stepNum = 0;
+            while ((stepNum < MaxIterations) && (zN.Magnitude < MaxMagnitude))
+            {
+                // Calculate z(stepNum).
+                Complex zNplus1 = zN * zN + c.Real + c.Imaginary * zNminus1;
+                zNminus1 = zN;
+                zN = zNplus1;
+                stepNum++;
+            }
+            z = zN;
         }
 
         // Set the pixel's color according to the
@@ -503,20 +522,55 @@ namespace escape_time_fractals
         private void ColorPixel(Bitmap32 bm32, int ix, int iy,
             Complex z, Complex c, int stepNum)
         {
+            // If we exceeded MaxIterations, use black.
+            if (stepNum >= MaxIterations) stepNum = 0;
+
+            // Calculate the pixel's color.
+            Color color;
+            if (SmoothingType == SmoothingTypes.None)
+            {
+                color = FractalColors[stepNum % NumColors];
+            }
+            else
+            {
+                color = SmoothColor(z, c, stepNum);
+            }
+
+            // Set the pixel's color.
+            bm32.SetPixel(ix, iy, color.R, color.G, color.B, 255);
         }
 
         // Return a smooth mandelbrot color.
         // See http://csharphelper.com/blog/2014/07/draw-a-mandelbrot-set-fractal-with-smoothly-shaded-colors-in-c/
         private Color SmoothColor(Complex z, Complex c, int stepNum)
         {
-            // Replace the following with your code.
-            return Color.Black;
+            if (stepNum == 0) return FractalColors[0];
+
+            // Reduce the error in mu.
+            for (int i = 0; i < 3; i++)
+            {
+                z = z * z + c;
+                stepNum++;
+            }
+            double mu = stepNum + 1 - Math.Log(Math.Log(z.Magnitude)) / LogEscape;
+
+            if (SmoothingType == SmoothingTypes.Smooth2)
+                mu = mu / MaxIterations * NumColors;
+            return MuToColor(mu);
         }
 
         private Color MuToColor(double mu)
         {
-            // Replace the following with your code.
-            return Color.Black;
+            int clr1 = (int)mu;
+            double t2 = mu - clr1;
+            double t1 = 1 - t2;
+            clr1 = clr1 % NumColors;
+            int clr2 = (clr1 + 1) % NumColors;
+
+            double r = FractalColors[clr1].R * t1 + FractalColors[clr2].R * t2;
+            double g = FractalColors[clr1].G * t1 + FractalColors[clr2].G * t2;
+            double b = FractalColors[clr1].B * t1 + FractalColors[clr2].B * t2;
+            return Color.FromArgb((byte)r, (byte)g, (byte)b);
         }
 
         #endregion Fractal drawing
